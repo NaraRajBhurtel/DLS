@@ -127,7 +127,52 @@ export const courseApi = createApi({
             invalidatesTags: ["Refetch_Creator_Course"], // Invalidate cache to refresh course list
           }),
 
-    }),
+                    // Get all quizzes for a course
+          getCourseQuizzes: builder.query({
+            query: (courseId) => `/${courseId}/quizzes`,
+            providesTags: ['Quiz'],
+          }),
+
+          createQuiz: builder.mutation({
+            query: ({ quizTitle, courseId }) => ({
+              url: `/${courseId}/quizzes`,   
+              method: 'POST',
+              body: { quizTitle, courseId }, // Include courseId if your controller requires it
+            }),
+            invalidatesTags: ['Quiz'],
+          }),
+          
+          getQuizById: builder.query({
+            query: ({ courseId, quizId }) => `/${courseId}/quizzes/${quizId}`,
+            providesTags: ['Quiz'],
+          }),
+          
+          editQuiz: builder.mutation({
+            query: ({ courseId, quizId, quizData }) => ({
+              url: `/${courseId}/quizzes/${quizId}`, 
+              method: "PUT",
+              body: quizData,
+            }),
+            invalidatesTags: ["Quiz"],
+          }),
+          
+          deleteQuiz: builder.mutation({
+            query: ({ quizId, courseId }) => ({
+              url: `/${courseId}/quizzes/${quizId}`,   // Correct URL format
+              method: 'DELETE',
+            }),
+            invalidatesTags: ['Quiz'],
+          }),
+          updateQuiz: builder.mutation({
+            query: ({ quizId, updatedQuizData }) => ({
+              url: `/quizzes/${quizId}`, // Adjust this if your endpoint differs
+              method: 'PUT',
+              body: updatedQuizData,
+            }),
+          }),
+          
+
+   }),
    
 
 
@@ -148,5 +193,12 @@ export const {
     useRemoveLectureMutation,
     useGetLectureByIdQuery,
     usePublishCourseMutation,
-    useRemoveCourseMutation,         
+    useRemoveCourseMutation,   
+    useGetCourseQuizzesQuery,
+    useCreateQuizMutation,
+    useGetQuizByIdQuery,
+    useEditQuizMutation,
+    useDeleteQuizMutation,
+    useUpdateQuizMutation,
+
   } = courseApi;

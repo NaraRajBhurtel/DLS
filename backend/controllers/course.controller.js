@@ -1,5 +1,10 @@
 import { Course } from "../models/course.model.js";
 import { Lecture } from "../models/lecture.model.js";
+import { Quiz } from "../models/quiz.model.js";
+import mongoose from "mongoose";
+
+
+
 
 import {deleteMediaFromCloudinary, deleteVideoFromCloudinary, uploadMedia} from "../utils/cloudinary.js";
 
@@ -378,10 +383,199 @@ export const removeCourse = async (req, res) => {
     }
 };
 
+// Create a new quiz
+// export const createQuiz = async (req, res) => {
+//     try {
+//       const { quizTitle, courseId } = req.body;
+  
+//       // Ensure quiz title and course ID are provided
+//       if (!quizTitle || !courseId) {
+//         return res.status(400).json({ message: 'Quiz title and course ID are required' });
+//       }
+  
+//       const newQuiz = new Quiz({
+//         quizTitle,
+//         courseId,
+//         questions: [],
+//         correctAnswers: [],
+//       });
+  
+//       const savedQuiz = await newQuiz.save();
+  
+//       res.status(201).json({
+//         message: 'Quiz created successfully',
+//         quiz: savedQuiz,
+//       });
+//     } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ message: 'Something went wrong' });
+//     }
+//   };
 
+// quiz.controller.js
 
+export const createQuiz = async (req, res) => {
+  try {
+    const { courseId } = req.params;  // Assuming courseId is passed in the URL
+    const { quizTitle, questions, correctAnswers } = req.body;
 
+    // Create the quiz document
+    const newQuiz = new Quiz({
+      quizTitle,
+      questions,
+      correctAnswers,
+    });
 
+    await newQuiz.save();
 
+    // Find the course and add the quiz reference to its quizzes array
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({
+        message: "Course not found",
+      });
+    }
 
+    course.quizzes.push(newQuiz._id);  // Add quiz reference to the course
+    await course.save();
 
+    return res.status(201).json({
+      message: "Quiz created successfully",
+      quiz: newQuiz,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Failed to create quiz",
+    });
+  }
+};
+
+  
+  // Edit a quiz
+  export const editQuiz = async (req, res) => {
+    try {
+      const { quizId } = req.params;
+      const { quizTitle, questions, correctAnswers } = req.body;
+  
+      if (!quizTitle || !questions || !correctAnswers) {
+        return res.status(400).json({ message: 'Quiz title, questions, and correct answers are required' });
+      }
+  
+      const quiz = await Quiz.findById(quizId);
+  
+      if (!quiz) {
+        return res.status(404).json({ message: 'Quiz not found' });
+      }
+  
+      // Update quiz
+      quiz.quizTitle = quizTitle;
+      quiz.questions = questions;
+      quiz.correctAnswers = correctAnswers;
+  
+      await quiz.save();
+  
+      res.status(200).json({
+        message: 'Quiz updated successfully',
+        quiz: quiz,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Something went wrong' });
+    }
+  };
+  
+  // Get quiz by ID
+  export const getQuizById = async (req, res) => {
+    try {
+      const { quizId } = req.params;
+  
+      const quiz = await Quiz.findById(quizId);
+  
+      if (!quiz) {
+        return res.status(404).json({ message: 'Quiz not found' });
+      }
+  
+      res.status(200).json(quiz);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Something went wrong' });
+    }
+  };
+
+  export const removeQuiz = async (req, res) => {
+    try {
+      const { quizId } = req.params;
+      const quiz = await Quiz.findByIdAndDelete(quizId);
+  
+      if (!quiz) {
+        return res.status(404).json({
+          message: "Quiz not found",
+        });
+      }
+  
+      // Remove quiz reference from courses
+      await Course.updateMany(
+        { quizzes: quizId },
+        { $pull: { quizzes: quizId } }
+      );
+  
+      return res.status(200).json({
+        message: "Quiz removed successfully.",
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        message: "Failed to remove quiz",
+      });
+    }
+  };
+
+//   export const getCourseQuizzes = async (req, res) => {
+//     try {
+//       const { courseId } = req.params;
+      
+//       // Fetch the course and populate quizzes
+//       const course = await Course.findById(courseId).populate("quizzes"); // Assuming 'quizzes' is populated in the Course model
+  
+//       if (!course) {
+//         return res.status(404).json({
+//           message: "Course not found"
+//         });
+//       }
+  
+//       return res.status(200).json({
+//         quizzes: course.quizzes
+//       });
+  
+//     } catch (error) {
+//       console.log(error);
+//       return res.status(500).json({
+//         message: "Failed to get quizzes"
+//       });
+//     }
+//   };
+
+// course.controller.js (example)
+export const getCourseQuizzes = async (req, res) => {
+    try {
+      const { courseId } = req.params;
+      const course = await Course.findById(courseId).populate('quizzes');  // Make sure quizzes are populated
+  
+      if (!course) {
+        return res.status(404).json({
+          message: "Course not found",
+        });
+      }
+  
+      return res.status(200).json({
+        quizzes: course.quizzes,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        message: "Failed to get quizzes",
+      });
+    }
+  };
+  

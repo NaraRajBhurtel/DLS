@@ -21,6 +21,7 @@ import SearchPage from './pages/student/SearchPage'
 import { AuthenticatedUser, ProtectedRoute, TeacherRoute } from './components/ProtectedRoutes'
 import PurchaseCourseProtectedRoute from './components/PurchaseCourseProtectedRoute'
 import { ThemeProvider } from './components/ThemeProvider'
+import EditQuiz from './pages/teacher/lecture/EditQuiz'
 
 function App() {
 
@@ -125,6 +126,10 @@ function App() {
             path: "course/:courseId/lecture/:lectureId",
             element: <EditLecture />,
           },
+          {
+            path: "course/:courseId/quizzes/:quizId",  
+            element: <EditQuiz />,
+          }
 
        
         ]

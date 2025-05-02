@@ -33,6 +33,8 @@ const courseSchema = new mongoose.Schema({
             ref:"Lecture"
         }
     ],
+    quizzes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Quiz' }],
+
     creator:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'User'
