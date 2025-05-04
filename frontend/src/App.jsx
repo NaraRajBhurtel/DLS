@@ -22,6 +22,7 @@ import { AuthenticatedUser, ProtectedRoute, TeacherRoute } from './components/Pr
 import PurchaseCourseProtectedRoute from './components/PurchaseCourseProtectedRoute'
 import { ThemeProvider } from './components/ThemeProvider'
 import EditQuiz from './pages/teacher/lecture/EditQuiz'
+import InstructorMessages from './pages/teacher/messages/InstructorMessages'
 
 function App() {
 
@@ -106,6 +107,10 @@ function App() {
             element: <Dashboard />,
           },
           {
+            path: "messages",
+            element: <InstructorMessages />,
+          },
+          {
             path: "course",
             element: <CourseTable/>,
           },
@@ -130,6 +135,7 @@ function App() {
             path: "course/:courseId/quizzes/:quizId",  
             element: <EditQuiz />,
           }
+
 
        
         ]

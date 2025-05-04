@@ -4,13 +4,17 @@ import { authApi } from "/features/api/authApi";
 import { courseApi } from "/features/api/courseApi";
 import { purchaseApi } from "/features/api/purchaseApi";
 import { courseProgressApi } from "/features/api/courseProgressApi";
+import { chatApi } from "/features/api/chatApi";
 
 
 
 export const appStore = configureStore({
     reducer: rootRedcuer,
-        [authApi.reducerPath]: authApi.reducer,
-    middleware:(defaultMiddleware) => defaultMiddleware().concat(authApi.middleware, courseApi.middleware, purchaseApi.middleware, courseProgressApi.middleware),
+    middleware:(defaultMiddleware) => defaultMiddleware().concat(authApi.middleware, 
+        courseApi.middleware, 
+        purchaseApi.middleware, 
+        courseProgressApi.middleware,
+        chatApi.middleware),
 });
 
 const initializeApp = async () => {

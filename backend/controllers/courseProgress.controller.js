@@ -1,17 +1,57 @@
 
 import { CourseProgress } from "../models/courseProgress.js";
 import { Course } from "../models/course.model.js";
+import { Quiz } from "../models/quiz.model.js";
+
+// export const getCourseProgress = async (req, res) => {
+//   try {
+//     const { courseId } = req.params;
+//     const userId = req.id;
+
+//     // step-1 fetch the user course progress
+//     let courseProgress = await CourseProgress.findOne({
+//       courseId,
+//       userId,
+//     }).populate("courseId");
+
+//     const courseDetails = await Course.findById(courseId).populate("lectures");
+
+//     if (!courseDetails) {
+//       return res.status(404).json({
+//         message: "Course not found",
+//       });
+//     }
+
+//     // Step-2 If no progress found, return course details with an empty progress
+//     if (!courseProgress) {
+//       return res.status(200).json({
+//         data: {
+//           courseDetails,
+//           progress: [],
+//           completed: false,
+//         },
+//       });
+//     }
+
+//     // Step-3 Return the user's course progress alog with course details
+//     return res.status(200).json({
+//       data: {
+//         courseDetails,
+//         progress: courseProgress.lectureProgress,
+//         completed: courseProgress.completed,
+//       },
+//     });
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 
 export const getCourseProgress = async (req, res) => {
   try {
     const { courseId } = req.params;
     const userId = req.id;
 
-    // step-1 fetch the user course progress
-    let courseProgress = await CourseProgress.findOne({
-      courseId,
-      userId,
-    }).populate("courseId");
+    let courseProgress = await CourseProgress.findOne({ courseId, userId }).populate("courseId");
 
     const courseDetails = await Course.findById(courseId).populate("lectures");
 
@@ -21,27 +61,120 @@ export const getCourseProgress = async (req, res) => {
       });
     }
 
-    // Step-2 If no progress found, return course details with an empty progress
     if (!courseProgress) {
       return res.status(200).json({
         data: {
           courseDetails,
           progress: [],
           completed: false,
+          quizzes: [],
         },
       });
     }
 
-    // Step-3 Return the user's course progress alog with course details
     return res.status(200).json({
       data: {
         courseDetails,
         progress: courseProgress.lectureProgress,
         completed: courseProgress.completed,
+        quizzes: courseProgress.quizAttempts, // Include quiz attempts in the response
       },
     });
   } catch (error) {
     console.log(error);
+    res.status(500).json({ message: "Error fetching course progress" });
+  }
+};
+
+// Handle quiz attempt submission
+export const submitQuizAttempt = async (req, res) => {
+  try {
+    const { courseId, quizId } = req.params;
+    const userId = req.id;
+    const { studentAnswers } = req.body;  // Assuming answers are provided in the request body
+
+    // Find course progress
+    let courseProgress = await CourseProgress.findOne({ courseId, userId });
+
+    if (!courseProgress) {
+      courseProgress = new CourseProgress({
+        userId,
+        courseId,
+        completed: false,
+        lectureProgress: [],
+        quizAttempts: [],
+      });
+    }
+
+    // Find the quiz
+    const quiz = await Quiz.findById(quizId);
+
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz not found" });
+    }
+
+    // Calculate score
+    let score = 0;
+    studentAnswers.forEach((answer, index) => {
+      if (answer === quiz.questions[index]?.correctAnswer) {
+        score += 1;
+      }
+    });
+
+    // Store the quiz attempt in the course progress
+    const quizAttempt = {
+      quizId,
+      studentAnswers,
+      score,
+      completed: true,
+    };
+
+    courseProgress.quizAttempts.push(quizAttempt);
+    await courseProgress.save();
+
+    return res.status(200).json({
+      message: "Quiz submitted successfully",
+      score: score,
+      totalQuestions: quiz.questions.length,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error submitting quiz" });
+  }
+};
+
+// Handle review of the quiz attempt
+export const reviewQuizAttempt = async (req, res) => {
+  try {
+    const { courseId, quizId } = req.params;
+    const userId = req.id;
+
+    const courseProgress = await CourseProgress.findOne({ courseId, userId });
+
+    if (!courseProgress) {
+      return res.status(404).json({ message: "Course progress not found" });
+    }
+
+    const quizAttempt = courseProgress.quizAttempts.find((quiz) => quiz.quizId.toString() === quizId);
+
+    if (!quizAttempt) {
+      return res.status(404).json({ message: "Quiz attempt not found" });
+    }
+
+    const quiz = await Quiz.findById(quizId);
+
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz not found" });
+    }
+
+    // Return quiz attempt details, including student's answers and score
+    return res.status(200).json({
+      quizAttempt,
+      quiz: quiz,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error reviewing quiz" });
   }
 };
 
@@ -138,3 +271,23 @@ export const markAsInCompleted = async (req, res) => {
       console.log(error);
     }
   };
+
+
+// New endpoint to fetch quizzes by course ID
+export const getQuizzesByCourseId = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    const course = await Course.findById(courseId).populate("quizzes");
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    return res.status(200).json(course.quizzes);
+  } catch (error) {
+    console.error("Error fetching quizzes by course ID:", error);
+    return res.status(500).json({ message: "Failed to fetch quizzes" });
+  }
+};
+  

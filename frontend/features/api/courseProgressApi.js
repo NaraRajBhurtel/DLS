@@ -34,6 +34,28 @@ export const courseProgressApi = createApi({
             method:"POST"
         })
     }),
+
+    // Add this endpoint to fetch quizzes by course ID
+    getQuizzesByCourseId: builder.query({
+      query: (courseId) => `/${courseId}/quizzes`,
+    }),
+
+      // New endpoint for submitting quiz attempt
+      submitQuizAttempt: builder.mutation({
+        query: ({ courseId, quizId, studentAnswers }) => ({
+          url: `/${courseId}/quiz/${quizId}/submit`,
+          method: "POST",
+          body: { studentAnswers },
+        }),
+      }),
+  
+      // New endpoint for reviewing quiz attempt
+      reviewQuizAttempt: builder.query({
+        query: ({ courseId, quizId }) => ({
+          url: `/${courseId}/quiz/${quizId}/review`,
+          method: "GET",
+        }),
+      }),
     
   }),
 });
@@ -41,5 +63,8 @@ export const {
 useGetCourseProgressQuery,
 useUpdateLectureProgressMutation,
 useCompleteCourseMutation,
-useInCompleteCourseMutation
+useInCompleteCourseMutation,
+useSubmitQuizAttemptMutation,
+useReviewQuizAttemptQuery,
+useGetQuizzesByCourseIdQuery
 } = courseProgressApi;

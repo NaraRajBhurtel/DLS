@@ -163,6 +163,7 @@ export const getCourseById = async (req,res) => {
         const {courseId} = req.params;
 
         const course = await Course.findById(courseId);
+        
 
         if(!course){
             return res.status(404).json({
