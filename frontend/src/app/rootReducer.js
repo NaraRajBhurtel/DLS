@@ -5,6 +5,7 @@ import { courseApi } from "/features/api/courseApi";
 import { purchaseApi } from "/features/api/purchaseApi";
 import { courseProgressApi } from "/features/api/courseProgressApi";
 import { chatApi } from "/features/api/chatApi";
+import { liveMeetingApi } from "/features/api/liveMeetingApi"; 
 
 
 const rootRedcuer = combineReducers({
@@ -13,6 +14,7 @@ const rootRedcuer = combineReducers({
     [purchaseApi.reducerPath]:purchaseApi.reducer,
     [courseProgressApi.reducerPath]:courseProgressApi.reducer,
     [chatApi.reducerPath]: chatApi.reducer,
+    [liveMeetingApi.reducerPath]: liveMeetingApi.reducer,
     auth:authReducer
     
 });

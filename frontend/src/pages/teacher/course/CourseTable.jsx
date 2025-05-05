@@ -44,9 +44,21 @@ return (
               <TableCell className="font-medium text-left px-4">{course?.coursePrice || "NA"}</TableCell>
               <TableCell className="px-4"> <Badge>{course.isPublished ? "Published" : "Draft"}</Badge> </TableCell>
               <TableCell className="px-4">{course.courseTitle}</TableCell>
-              <TableCell className="text-right px-4">
-                 <Button size='sm' variant='ghost' onClick={() => navigate(`${course._id}`)}><Edit/></Button>
-              </TableCell>
+              <TableCell className="text-right px-4 flex items-center justify-end gap-2">
+  <Button size='sm' variant='ghost' onClick={() => navigate(`${course._id}`)}>
+    <Edit />
+  </Button>
+  
+  {course.isPublished && (
+    <Button
+      size='sm'
+      variant='outline'
+      onClick={() => navigate(`/teacher/course/live-class/${course._id}`)}
+    >
+      Live Class
+    </Button>
+  )}
+</TableCell>
             </TableRow>
           ))}
         </TableBody>

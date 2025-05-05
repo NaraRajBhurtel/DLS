@@ -67,7 +67,7 @@ export const login = async (req,res) => {
         if(!isPasswordMatch){
             return res.status(400).json({
                 success:false,
-                message:"Incorrect email or password"
+                message:"Incorrect email password"
             });
         }
         generateToken(res, user, `Welcome back ${user.name}`);

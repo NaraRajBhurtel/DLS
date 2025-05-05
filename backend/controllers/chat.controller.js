@@ -70,8 +70,8 @@ export const getMessages = async (req, res) => {
     try {
       const { studentId, courseId } = req.params;
 
-      console.log("Received studentId:", studentId);
-      console.log("Received courseId:", courseId);
+      // console.log("Received studentId:", studentId);
+      // console.log("Received courseId:", courseId);
   
       // Validate ObjectIds
     //   if (!mongoose.Types.ObjectId.isValid(studentId) || !mongoose.Types.ObjectId.isValid(courseId)) {
