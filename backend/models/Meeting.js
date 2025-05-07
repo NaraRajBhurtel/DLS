@@ -32,17 +32,6 @@ const meetingSchema = new mongoose.Schema({
   instructorToken: {
     type: String,
   },
-  joinRequests: [
-    {
-      studentId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      status: {
-        type: String,
-        enum: ["pending", "approved", "denied"],
-        default: "pending",
-      },
-    },
-  ],
-  approvedStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
 const Meeting = mongoose.model("Meeting", meetingSchema);

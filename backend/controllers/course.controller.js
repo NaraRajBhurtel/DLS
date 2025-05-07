@@ -384,37 +384,6 @@ export const removeCourse = async (req, res) => {
     }
 };
 
-// Create a new quiz
-// export const createQuiz = async (req, res) => {
-//     try {
-//       const { quizTitle, courseId } = req.body;
-  
-//       // Ensure quiz title and course ID are provided
-//       if (!quizTitle || !courseId) {
-//         return res.status(400).json({ message: 'Quiz title and course ID are required' });
-//       }
-  
-//       const newQuiz = new Quiz({
-//         quizTitle,
-//         courseId,
-//         questions: [],
-//         correctAnswers: [],
-//       });
-  
-//       const savedQuiz = await newQuiz.save();
-  
-//       res.status(201).json({
-//         message: 'Quiz created successfully',
-//         quiz: savedQuiz,
-//       });
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ message: 'Something went wrong' });
-//     }
-//   };
-
-// quiz.controller.js
-
 export const createQuiz = async (req, res) => {
   try {
     const { courseId } = req.params;  // Assuming courseId is passed in the URL
@@ -532,32 +501,9 @@ export const createQuiz = async (req, res) => {
     }
   };
 
-//   export const getCourseQuizzes = async (req, res) => {
-//     try {
-//       const { courseId } = req.params;
-      
-//       // Fetch the course and populate quizzes
-//       const course = await Course.findById(courseId).populate("quizzes"); // Assuming 'quizzes' is populated in the Course model
-  
-//       if (!course) {
-//         return res.status(404).json({
-//           message: "Course not found"
-//         });
-//       }
-  
-//       return res.status(200).json({
-//         quizzes: course.quizzes
-//       });
-  
-//     } catch (error) {
-//       console.log(error);
-//       return res.status(500).json({
-//         message: "Failed to get quizzes"
-//       });
-//     }
-//   };
 
-// course.controller.js (example)
+
+
 export const getCourseQuizzes = async (req, res) => {
     try {
       const { courseId } = req.params;

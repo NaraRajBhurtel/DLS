@@ -72,77 +72,56 @@ export const deleteMeeting = async (req, res) => {
     }
   };
   
-
-// Student sends join request
-export const requestToJoin = async (req, res) => {
-  try {
-    const { meetingId } = req.params;
-    const studentId = req.id;  // Assuming req.id contains the student ID
-
-    const meeting = await Meeting.findById(meetingId);
-    const alreadyRequested = meeting.joinRequests.some(
-      (req) => req.studentId.toString() === studentId.toString()
-    );
-
-    if (!alreadyRequested) {
-      meeting.joinRequests.push({ studentId });
-      await meeting.save();
-    }
-
-    const studentToken = generateZegoToken(
-      parseInt(process.env.ZEGOCLOUD_APP_ID),
-      process.env.ZEGOCLOUD_APP_SIGN,
-      meeting.zegoRoomId,
-      studentId.toString()
-    );
-
-    res.status(200).json({
-      message: "Join request sent",
-      studentToken,
-    });
-  } catch (err) {
-    res.status(500).json({ message: "Failed to send request", error: err.message });
-  }
-};
-
-// Instructor approves student
-export const approveStudent = async (req, res) => {
-  try {
-    const { meetingId } = req.params;
-    const { studentId } = req.body;
-
-    const meeting = await Meeting.findById(meetingId);
-
-    const joinRequest = meeting.joinRequests.find(
-      (req) => req.studentId.toString() === studentId
-    );
-
-    if (joinRequest) {
-      joinRequest.status = "approved";
-
-      if (!meeting.approvedStudents.includes(studentId)) {
-        meeting.approvedStudents.push(studentId);
+  export const startMeeting = async (req, res) => {
+    try {
+      const { meetingId } = req.params;
+  
+      // Find the meeting by ID
+      const meeting = await Meeting.findById(meetingId);
+  
+      if (!meeting) {
+        return res.status(404).json({ message: "Meeting not found" });
       }
-
+  
+      // Check if the meeting is scheduled (we don't want to start an already live meeting)
+      if (meeting.status === "live") {
+        return res.status(400).json({ message: "Meeting is already live" });
+      }
+  
+      // Update the status to 'live'
+      meeting.status = "live";
       await meeting.save();
-
-      const studentToken = generateZegoToken(
-        parseInt(process.env.ZEGOCLOUD_APP_ID),
-        process.env.ZEGOCLOUD_APP_SIGN,
-        meeting.zegoRoomId,
-        studentId.toString()
-      );
-
-      res.status(200).json({
-        message: "Student approved",
-        studentToken,
-      });
-    } else {
-      res.status(404).json({ message: "Request not found" });
+  
+      res.status(200).json({ message: "Meeting started successfully", meeting });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to start meeting", error: err.message });
     }
+  };
+
+
+
+
+
+
+// Fetch meeting for student with live class token
+export const getMeetingForStudent = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    // Find the first upcoming or live meeting for the course
+    const meetings = await Meeting.findOne({
+      courseId,
+      status: { $in: ["live", "scheduled"] }, // Include both live and scheduled meetings
+      startTime: { $gte: new Date() },  // Ensuring the meeting is scheduled for the future
+    }).sort({ startTime: 1 }); // Sort by start time to get the earliest meeting
+
+    if (!meetings) {
+      return res.status(404).json({ message: "No meeting found for this course." });
+    }
+
+    // Return the meeting details 
+    res.status(200).json(meetings);
   } catch (err) {
-    res.status(500).json({ message: "Failed to approve student", error: err.message });
+    res.status(500).json({ message: "Failed to get the meeting", error: err.message });
   }
 };
-
-

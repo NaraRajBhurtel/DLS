@@ -22,8 +22,12 @@ import EditQuiz from './pages/teacher/lecture/EditQuiz';
 import InstructorMessages from './pages/teacher/messages/InstructorMessages';
 import LiveClass from './pages/teacher/course/LiveClass';
 import MeetingRoom from './pages/teacher/course/MeetingRoom';
+import DiscussionPage from "./pages/discussion/DiscussionPage";
+import DiscussionTopicDetail from "./pages/Discussion/DiscussionDetailPage";
+import NewDiscussionPage from "./pages/discussion/NewDiscussionPage";
 
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import DiscussionDetailPage from './pages/Discussion/DiscussionDetailPage';
 
 function App() {
   const appRouter = createBrowserRouter([
@@ -91,6 +95,18 @@ function App() {
             </ProtectedRoute>
           ),
         },
+        {
+          path: "/discussion",
+          element: <DiscussionPage/>,
+        },
+        {
+          path:"/discussion/new",
+          element: <NewDiscussionPage />,
+        },
+        {
+          path:"/discussion/:id",
+          element: <DiscussionDetailPage />,
+        },
 
         // TEACHER routes with sidebar
         {
@@ -117,7 +133,7 @@ function App() {
       ],
     },
 
-    // OUTSIDE layout — full screen ZEGOCLOUD Meeting Room
+    
     {
       path: "/teacher/course/meeting-room/:zegoRoomId",
       element: <MeetingRoom />,

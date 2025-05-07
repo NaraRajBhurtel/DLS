@@ -6,6 +6,7 @@ import { purchaseApi } from "/features/api/purchaseApi";
 import { courseProgressApi } from "/features/api/courseProgressApi";
 import { chatApi } from "/features/api/chatApi";
 import { liveMeetingApi } from "/features/api/liveMeetingApi";
+import { discussionApi } from "/features/api/discussionApi";
 
 
 
@@ -16,7 +17,10 @@ export const appStore = configureStore({
         purchaseApi.middleware, 
         courseProgressApi.middleware,
         chatApi.middleware,
-        liveMeetingApi.middleware),
+        liveMeetingApi.middleware,
+        discussionApi.middleware,
+    
+    ),
 });
 
 const initializeApp = async () => {
