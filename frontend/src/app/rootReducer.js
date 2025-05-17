@@ -7,6 +7,7 @@ import { courseProgressApi } from "/features/api/courseProgressApi";
 import { chatApi } from "/features/api/chatApi";
 import { liveMeetingApi } from "/features/api/liveMeetingApi"; 
 import { discussionApi } from "/features/api/discussionApi";
+import { adminApi } from "/features/api/adminApi";
 
 
 const rootRedcuer = combineReducers({
@@ -17,6 +18,7 @@ const rootRedcuer = combineReducers({
     [chatApi.reducerPath]: chatApi.reducer,
     [liveMeetingApi.reducerPath]: liveMeetingApi.reducer,
     [discussionApi.reducerPath]: discussionApi.reducer,
+    [adminApi.reducerPath]: adminApi.reducer,
     auth:authReducer
     
 });

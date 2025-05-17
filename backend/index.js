@@ -11,6 +11,7 @@ import courseProgressRoute from "./routes/courseProgress.route.js";
 import chatRoute from "./routes/chat.route.js";
 import liveMeetingRoutes from "./routes/liveMeetingRoutes.js";
 import discussionRoutes from "./routes/discussionRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 
 dotenv.config({})
@@ -42,6 +43,7 @@ app.use("/api/v1/progress", courseProgressRoute);
 app.use("/api/v1/chat", chatRoute);
 app.use("/api/v1/meetings", liveMeetingRoutes);
 app.use("/api/v1/discussions", discussionRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 
 

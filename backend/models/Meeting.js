@@ -26,7 +26,7 @@ const meetingSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["live", "scheduled", "ended"],
+    enum: ["live", "scheduled"],
     default: "scheduled",
   },
   instructorToken: {

@@ -48,7 +48,9 @@ const CourseDetail = () => {
           <p className="text-base md:text-lg">Course Sub-title</p>
           <p>
             Created By{""}
-            <span className="text-[#C0C4FC] underline italic">{course?. creator.name}</span>
+            <span className="text-[#C0C4FC] underline italic">
+  {course?.creator?.name || "Instructor"}
+</span>
           </p>
           <div>
             <div className="flex items-center gap-2 text-sm">
@@ -69,12 +71,7 @@ const CourseDetail = () => {
               <CardDescription></CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-             {/* { course.lectures.map((lecture, idx) => (
-                <div key={idx} className="flex items-center gap-3 text-sm">
-                  <span>
-                    {true ? <PlayCircle size={14} /> : <Lock size={14} />}
-                  </span>
-                  <p>{lecture.lectureTitle}</p> */}
+            
 
 {course.lectures.map((lecture, idx) => (
                 <div key={idx} className="flex items-center gap-3 text-sm">

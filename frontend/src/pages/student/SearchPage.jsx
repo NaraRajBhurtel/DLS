@@ -1,22 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Filter from "./Filter";
 import SearchResult from "./SearchResult";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetSearchCourseQuery } from "../../../features/api/courseApi";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const SearchPage = () => {
-  const [searchParams] = useSearchParams();
-  const query = searchParams.get("query");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const initialQuery = searchParams.get("query") || "";
+  
+  const [searchTerm, setSearchTerm] = useState(initialQuery);
   const [selectedCategories, setSelectedCatgories] = useState([]);
   const [sortByPrice, setSortByPrice] = useState("");
 
+  // Update searchTerm if query param changes (for back/forward browser)
+  useEffect(() => {
+    setSearchTerm(searchParams.get("query") || "");
+  }, [searchParams]);
+
+  // Fetch courses based on URL query param
   const { data, isLoading } = useGetSearchCourseQuery({
-    searchQuery:query,
-    categories:selectedCategories,
-    sortByPrice
+    searchQuery: searchParams.get("query"),
+    categories: selectedCategories,
+    sortByPrice,
   });
 
   const isEmpty = !isLoading && data?.courses.length === 0;
@@ -24,27 +33,55 @@ const SearchPage = () => {
   const handleFilterChange = (categories, price) => {
     setSelectedCatgories(categories);
     setSortByPrice(price);
-  }
+  };
+
+  // Handle form submission for new search
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    // Update the URL query param to trigger new fetch
+    if (searchTerm.trim()) {
+      setSearchParams({ query: searchTerm.trim() });
+    } else {
+      // Clear query param if input is empty
+      setSearchParams({});
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-8">
+      {/* Search Bar */}
+      <form onSubmit={handleSearchSubmit} className="mb-6">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search courses..."
+          className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+        <button type="submit" className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+          Search
+        </button>
+      </form>
+
       <div className="my-6">
-        <h1 className="font-bold text-xl md:text-2xl">result for "{query}"</h1>
+        <h1 className="font-bold text-xl md:text-2xl">
+          result for "{searchParams.get("query")}"
+        </h1>
         <p>
-          Showing results for{""}
-          <span className="text-blue-800 font-bold italic">{query}</span>
+          Showing results for{" "}
+          <span className="text-blue-800 font-bold italic">{searchParams.get("query")}</span>
         </p>
       </div>
+
       <div className="flex flex-col md:flex-row gap-10">
-        <Filter handleFilterChange={handleFilterChange}/>
+        <Filter handleFilterChange={handleFilterChange} />
         <div className="flex-1">
           {isLoading ? (
-            Array.from({ length: 3 }).map((_, idx) => (
-              <CourseSkeleton key={idx} />
-            ))
+            Array.from({ length: 3 }).map((_, idx) => <CourseSkeleton key={idx} />)
           ) : isEmpty ? (
             <CourseNotFound />
           ) : (
-            data?.courses?.map((course) => <SearchResult key={course._id} course={course}/>)
+            data?.courses?.map((course) => <SearchResult key={course._id} course={course} />)
           )}
         </div>
       </div>

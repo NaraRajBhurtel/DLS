@@ -15,10 +15,10 @@ const userSchema = new mongoose.Schema({
     },
     role:{
         type:String,
-        enum:["instructor", "student"],
+        enum: ["instructor", "student", "admin"], // added "admin"
         // default:"student"
-        require:true
-        
+        required:true
+
     },
     enrolledCourses:[
         {

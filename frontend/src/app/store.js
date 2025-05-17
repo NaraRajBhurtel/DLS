@@ -7,6 +7,7 @@ import { courseProgressApi } from "/features/api/courseProgressApi";
 import { chatApi } from "/features/api/chatApi";
 import { liveMeetingApi } from "/features/api/liveMeetingApi";
 import { discussionApi } from "/features/api/discussionApi";
+import { adminApi } from "/features/api/adminApi";
 
 
 
@@ -19,6 +20,7 @@ export const appStore = configureStore({
         chatApi.middleware,
         liveMeetingApi.middleware,
         discussionApi.middleware,
+        adminApi.middleware,
     
     ),
 });

@@ -21,6 +21,12 @@ export const register = async (req,res) => {
                 message:"User already exist with this email."
             })
         }
+        if (req.body.role === "admin") {
+    const existingAdmin = await User.findOne({ role: "admin" });
+    if (existingAdmin) {
+        return res.status(400).json({ message: "Admin account already exists" });
+    }
+}
 
         if (password !== confirmPassword) {
             return res.status(400).json({
@@ -70,7 +76,20 @@ export const login = async (req,res) => {
                 message:"Incorrect email password"
             });
         }
-        generateToken(res, user, `Welcome back ${user.name}`);
+
+        // Sanitize user object here before sending
+    const safeUser = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      photoUrl: user.photoUrl,
+      enrolledCourses: user.enrolledCourses,
+      
+    };
+
+    generateToken(res, safeUser, `Welcome back ${user.name}`);
+        // generateToken(res, user, `Welcome back ${user.name}`);
 
     } catch (error) {
         console.log(error);

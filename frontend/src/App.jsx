@@ -15,7 +15,7 @@ import EditLecture from './pages/teacher/lecture/EditLecture';
 import CourseDetail from './pages/student/CourseDetail';
 import CourseProgress from './pages/student/CourseProgress';
 import SearchPage from './pages/student/SearchPage';
-import { AuthenticatedUser, ProtectedRoute, TeacherRoute } from './components/ProtectedRoutes';
+import { AdminRoute, AuthenticatedUser, ProtectedRoute, TeacherRoute } from './components/ProtectedRoutes';
 import PurchaseCourseProtectedRoute from './components/PurchaseCourseProtectedRoute';
 import { ThemeProvider } from './components/ThemeProvider';
 import EditQuiz from './pages/teacher/lecture/EditQuiz';
@@ -28,6 +28,11 @@ import NewDiscussionPage from "./pages/discussion/NewDiscussionPage";
 
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import DiscussionDetailPage from './pages/Discussion/DiscussionDetailPage';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminCourses from './pages/admin/AdminCourses';
+import AdminLiveMeetings from './pages/admin/AdminLiveMeetings';
+import AdminSidebar from './pages/AdminSidebar';
 
 function App() {
   const appRouter = createBrowserRouter([
@@ -137,6 +142,24 @@ function App() {
     {
       path: "/teacher/course/meeting-room/:zegoRoomId",
       element: <MeetingRoom />,
+    },
+
+    {
+      path: "/admin",
+      element: (
+        <ProtectedRoute>
+          <AdminRoute>
+        <AdminSidebar />
+          </AdminRoute>
+          
+        </ProtectedRoute>
+      ),
+      children: [
+        { path: "dashboard", element: <AdminDashboard /> },
+        { path: "users", element: <AdminUsers /> },
+        { path: "courses", element: <AdminCourses /> },
+        { path: "live-meetings", element: <AdminLiveMeetings /> },
+      ],
     },
   ]);
 
