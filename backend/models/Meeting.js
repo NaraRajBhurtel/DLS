@@ -21,7 +21,7 @@ const meetingSchema = new mongoose.Schema({
   },
   meetingType: {
     type: String,
-    enum: ["now", "scheduled"],
+    enum: ["live", "scheduled"],
     required: true,
   },
   status: {

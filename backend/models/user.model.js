@@ -13,6 +13,11 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:true
     },
+    isVerified:{
+        type:Boolean,
+        default:false
+    },
+    verificationToken: String,
     role:{
         type:String,
         enum: ["instructor", "student", "admin"], // added "admin"

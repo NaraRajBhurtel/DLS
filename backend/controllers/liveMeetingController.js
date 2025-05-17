@@ -1,17 +1,23 @@
 import dotenv from "dotenv";
 dotenv.config();
-
+import { Course } from "../models/course.model.js";
 import Meeting from "../models/Meeting.js";
 import { generateZegoToken } from "../utils/zegoTokenGenerator.js";
+import { sendScheduledMeetingEmail} from "../middlewares/Email.js" 
 
-// Create or schedule a meeting
+
+// // Create or schedule a meeting
 export const createMeeting = async (req, res) => {
+  console.log(" createMeeting controller triggered");
+
   try {
     const { courseId, zegoRoomId, startTime, meetingType } = req.body;
-    
-    // Use req.id instead of req.user._id or req.is for instructorId
-    const instructorId = req.id;  // This assumes req.id contains the instructor's ID
+    const instructorId = req.id;
 
+    console.log(" meetingType received:", meetingType);
+    console.log(" courseId:", courseId);
+
+    // Generate ZegoCloud token
     const instructorToken = generateZegoToken(
       parseInt(process.env.ZEGOCLOUD_APP_ID),
       process.env.ZEGOCLOUD_APP_SIGN,
@@ -19,22 +25,59 @@ export const createMeeting = async (req, res) => {
       instructorId.toString()
     );
 
+    // Create meeting document
     const meeting = new Meeting({
       courseId,
       instructorId,
       zegoRoomId,
       startTime,
       meetingType,
-      status: meetingType === "now" ? "live" : "scheduled",
+      status: meetingType === "live" ? "live" : "scheduled",
       instructorToken,
     });
 
     await meeting.save();
+    console.log(" Meeting saved to DB:", meeting);
+
+    // Fetch course and populate enrolled students
+    const course = await Course.findById(courseId).populate("enrolledStudents", "email name");
+
+    if (!course) {
+      console.log(" Course not found with ID:", courseId);
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    console.log(" Course loaded:", course.courseTitle);
+    console.log(" Enrolled students count:", course.enrolledStudents.length);
+
+    // If scheduled meeting and there are students, send email
+    if (meetingType === "scheduled" && course.enrolledStudents.length > 0) {
+      console.log(" Sending scheduled meeting emails...");
+
+      for (const student of course.enrolledStudents) {
+        console.log(` Sending email to ${student.email} (${student.name})`);
+        await sendScheduledMeetingEmail(
+          student.email,
+          student.name,
+          course.courseTitle,
+          startTime
+        );
+      }
+
+      console.log(" All emails sent successfully.");
+
+    } else {
+      console.log(" No emails sent (either not scheduled or no students).");
+    }
+    
     res.status(201).json(meeting);
   } catch (err) {
+    console.error(" Error in createMeeting:", err);
     res.status(500).json({ message: "Failed to create meeting", error: err.message });
   }
 };
+
+
 
 // Fetch meeting by course ID
 export const getMeetingByCourse = async (req, res) => {
@@ -97,11 +140,6 @@ export const deleteMeeting = async (req, res) => {
       res.status(500).json({ message: "Failed to start meeting", error: err.message });
     }
   };
-
-
-
-
-
 
 // Fetch meeting for student with live class token
 export const getMeetingForStudent = async (req, res) => {

@@ -105,6 +105,7 @@ export const TeacherRoute = ({ children }) => {
 
 export const AdminRoute = ({ children }) => {
   const { user, isAuthenticated } = useSelector((store) => store.auth);
+  const location = useLocation();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
@@ -116,3 +117,28 @@ export const AdminRoute = ({ children }) => {
 
   return children;
 };
+
+const AdminRedirect = ({ children }) => {
+  const { user, isAuthenticated } = useSelector((store) => store.auth);
+
+//   if (isAuthenticated && user?.role === "admin") {
+//     return <Navigate to="/admin/dashboard" />;
+//   }
+
+  //   Only allow admin to access specific admin pages
+  const allowedAdminPaths = [
+    "/admin/dashboard",
+    "/admin/users",
+    "/admin/courses",
+    "/admin/live-meetings",
+    "/admin" //  allow /admin as well
+  ];
+
+  // If not on an allowed admin path, redirect to dashboard
+  if (user?.role === "admin" && !allowedAdminPaths.includes(location.pathname)) {
+    return <Navigate to="/admin/dashboard" />;
+  }
+  return children;
+};
+
+export default AdminRedirect;

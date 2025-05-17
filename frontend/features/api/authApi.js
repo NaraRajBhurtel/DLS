@@ -17,6 +17,15 @@ export const authApi = createApi({
                 body:inputData
             })
         }),
+
+        verifyEmail: builder.mutation({
+  query: (data) => ({
+    url: "verifyEmail",
+    method: "POST",
+    body: data,
+  }),
+}),
+
         loginUser: builder.mutation({
             query: (inputData) => ({
                 url:"login",
@@ -76,5 +85,6 @@ export const {
     useLogoutUserMutation,
     useLoadUserQuery,
     useUpdateUserMutation,
+    useVerifyEmailMutation
     
 } = authApi;

@@ -33,21 +33,29 @@ import AdminUsers from './pages/admin/AdminUsers';
 import AdminCourses from './pages/admin/AdminCourses';
 import AdminLiveMeetings from './pages/admin/AdminLiveMeetings';
 import AdminSidebar from './pages/AdminSidebar';
+import AdminRedirect from './components/ProtectedRoutes';
 
 function App() {
   const appRouter = createBrowserRouter([
     // Root layout for student and general pages
     {
       path: "/",
-      element: <RootLayout />,
+      element:
+        // <ProtectedRoute>
+          <RootLayout />,
+        // </ProtectedRoute>,
       children: [
         {
           index: true,
           element: (
+            // <ProtectedRoute>
+            <AdminRedirect>
             <>
               <Hero />
               <Courses />
             </>
+            </AdminRedirect>
+            // {/* </ProtectedRoute> */}
           ),
         },
         {
@@ -61,56 +69,76 @@ function App() {
         {
           path: "my-learning",
           element: (
+            <AdminRedirect>
             <ProtectedRoute>
               <Mylearning />
             </ProtectedRoute>
+            </AdminRedirect>
           ),
         },
         {
           path: "profile",
           element: (
+            <AdminRedirect>
             <ProtectedRoute>
               <Profile />
             </ProtectedRoute>
+            </AdminRedirect>
           ),
         },
         {
+         
           path: "course/search",
           element: (
+             <AdminRedirect>
             <ProtectedRoute>
               <SearchPage />
             </ProtectedRoute>
+            </AdminRedirect>
           ),
         },
         {
           path: "course-detail/:courseId",
           element: (
-            <ProtectedRoute>
-              <CourseDetail />
-            </ProtectedRoute>
+            <AdminRedirect>
+      <ProtectedRoute>
+        <CourseDetail />
+      </ProtectedRoute>
+    </AdminRedirect>
           ),
         },
         {
           path: "course-progress/:courseId",
           element: (
-            <ProtectedRoute>
-              <PurchaseCourseProtectedRoute>
-                <CourseProgress />
-              </PurchaseCourseProtectedRoute>
-            </ProtectedRoute>
+            <AdminRedirect>
+      <ProtectedRoute>
+        <PurchaseCourseProtectedRoute>
+          <CourseProgress />
+        </PurchaseCourseProtectedRoute>
+      </ProtectedRoute>
+    </AdminRedirect>
           ),
         },
         {
           path: "/discussion",
-          element: <DiscussionPage/>,
+          element:
+           <AdminRedirect>
+      <DiscussionPage />
+    </AdminRedirect>,
         },
         {
           path:"/discussion/new",
-          element: <NewDiscussionPage />,
+          element: 
+          <AdminRedirect>
+      <NewDiscussionPage />
+    </AdminRedirect>,
         },
         {
           path:"/discussion/:id",
-          element: <DiscussionDetailPage />,
+          element: 
+         <AdminRedirect>
+      <DiscussionDetailPage />
+    </AdminRedirect>,
         },
 
         // TEACHER routes with sidebar

@@ -2,7 +2,7 @@ import { User } from "../models/user.model.js";
 
 export const isAdmin = async (req, res, next) => {
   try {
-    // Assuming your authentication middleware sets req.id or req.userId
+    //  authentication middleware sets req.id or req.userId
     const userId = req.id || req.userId;
 
     if (!userId) {
