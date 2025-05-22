@@ -92,6 +92,13 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
+    if (req.body.role === "admin") {
+    const existingAdmin = await User.findOne({ role: "admin" });
+    if (existingAdmin) {
+        return res.status(400).json({ message: "Admin account already exists" });
+    }
+}
+
     // Generate OTP
     const verificationToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
     console.log("Verification Token:", verificationToken);

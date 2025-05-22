@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 
 const quizAttemptSchema = new mongoose.Schema({
     quizId: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" },
-    studentAnswers: [{ type: Number }],  // Stores answer index for each question
+    studentAnswers: [{ type: String }],  // Stores answer index for each question
     score: { type: Number, default: 0 },
     completed: { type: Boolean, default: false },
     submittedAt: { type: Date, default: Date.now },

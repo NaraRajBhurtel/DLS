@@ -7,7 +7,6 @@ import Mylearning from './pages/student/Mylearning';
 import Profile from './pages/student/Profile';
 import Sidebar from './pages/Sidebar';
 import CourseTable from './pages/teacher/course/CourseTable';
-import Dashboard from './pages/teacher/Dashboard';
 import AddCourse from './pages/teacher/course/AddCourse';
 import UpdateCourse from './pages/teacher/course/UpdateCourse';
 import CreateLecture from './pages/teacher/lecture/CreateLecture';
@@ -152,7 +151,6 @@ function App() {
             </ProtectedRoute>
           ),
           children: [
-            { path: "dashboard", element: <Dashboard /> },
             { path: "messages", element: <InstructorMessages /> },
             { path: "course", element: <CourseTable /> },
             { path: "course/create", element: <AddCourse /> },

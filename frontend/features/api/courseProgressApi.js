@@ -49,13 +49,11 @@ export const courseProgressApi = createApi({
         }),
       }),
   
-      // New endpoint for reviewing quiz attempt
-      reviewQuizAttempt: builder.query({
-        query: ({ courseId, quizId }) => ({
-          url: `/${courseId}/quiz/${quizId}/review`,
-          method: "GET",
-        }),
-      }),
+    
+
+      getQuizAttempt: builder.query({
+  query: ({ courseId, quizId }) => `/course-progress/${courseId}/quiz/${quizId}/attempt`,
+}),
     
   }),
 });
@@ -65,6 +63,6 @@ useUpdateLectureProgressMutation,
 useCompleteCourseMutation,
 useInCompleteCourseMutation,
 useSubmitQuizAttemptMutation,
-useReviewQuizAttemptQuery,
-useGetQuizzesByCourseIdQuery
+useGetQuizzesByCourseIdQuery,
+useGetQuizAttemptQuery,
 } = courseProgressApi;

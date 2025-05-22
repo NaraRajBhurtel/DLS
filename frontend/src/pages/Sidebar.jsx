@@ -13,7 +13,6 @@ const Sidebar = () => {
   const { pathname } = useLocation();
 
   const navItems = [
-    { to: "dashboard", icon: <ChartNoAxesColumn size={20} />, label: "Dashboard" },
     { to: "course", icon: <SquareLibrary size={20} />, label: "Courses" },
     { to: "messages", icon: <MessageCircle size={20} />, label: "Messages" },
   ];

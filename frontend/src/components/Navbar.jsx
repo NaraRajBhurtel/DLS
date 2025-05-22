@@ -87,7 +87,7 @@ const Navbar = () => {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link to="/teacher/dashboard">Dashboard</Link>
+              <Link to="/teacher/course">Dashboard</Link>
             </DropdownMenuItem>
           </>
         )}

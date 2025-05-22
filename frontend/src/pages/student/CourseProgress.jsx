@@ -11,11 +11,11 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 import { CheckCircle, CheckCircle2, CirclePlay } from "lucide-react";
+import { skipToken } from "@reduxjs/toolkit/query";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import Chat from "./Chat";
-
 
 import {
   useCompleteCourseMutation,
@@ -23,12 +23,14 @@ import {
   useInCompleteCourseMutation,
   useUpdateLectureProgressMutation,
   useGetQuizzesByCourseIdQuery,
+  useSubmitQuizAttemptMutation,
+  useGetQuizAttemptQuery,
 } from "../../../features/api/courseProgressApi";
-import { useGetMeetingForStudentQuery } from "../../../features/api/liveMeetingApi";  // Importing the live meeting API query
+import { useGetMeetingForStudentQuery } from "../../../features/api/liveMeetingApi"; // Importing the live meeting API query
 
 const CourseProgress = () => {
   const { courseId } = useParams();
-  const navigate = useNavigate();  // Used for redirection
+  const navigate = useNavigate(); // Used for redirection
 
   const { data, isLoading, isError, refetch } =
     useGetCourseProgressQuery(courseId);
@@ -52,10 +54,48 @@ const CourseProgress = () => {
   const [quizModalOpen, setQuizModalOpen] = useState(false);
   const [activeQuiz, setActiveQuiz] = useState(null);
   const [userAnswers, setUserAnswers] = useState({});
+  const [submitQuizAttempt] = useSubmitQuizAttemptMutation();
   const [score, setScore] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [resultModalOpen, setResultModalOpen] = useState(false);
+  const [activeResultQuiz, setActiveResultQuiz] = useState(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const { data: meetingData} = useGetMeetingForStudentQuery(courseId); 
+  const { data: meetingData } = useGetMeetingForStudentQuery(courseId);
+
+  const {
+    data: quizAttemptData,
+    isLoading: quizAttemptLoading,
+    isError: quizAttemptError,
+    refetch: refetchQuizAttempt,
+  } = useGetQuizAttemptQuery(
+    activeResultQuiz ? { courseId, quizId: activeResultQuiz._id } : skipToken,
+    { skip: !activeResultQuiz }
+  );
+
+  function getFeedback(score, total) {
+    if (total === 0) return { msg: "", color: "" };
+    const percent = (score / total) * 100;
+    if (percent <= 40)
+      return {
+        msg: "You have to focus on study. Your score is bad.",
+        color: "text-red-600",
+      };
+    if (percent <= 69)
+      return {
+        msg: "Not Bad but still need to improve.",
+        color: "text-yellow-500",
+      };
+    if (percent <= 79)
+      return {
+        msg: "Going good. Keep it up.",
+        color:
+          "bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent font-semibold",
+      };
+    return {
+      msg: "Outstanding. You are doing best.",
+      color: "text-green-600 font-semibold",
+    };
+  }
 
   const toggleChat = () => {
     setIsChatOpen((prev) => !prev);
@@ -71,6 +111,12 @@ const CourseProgress = () => {
       toast.success(markInCompleteData.message);
     }
   }, [completedSuccess, inCompletedSuccess]);
+
+  useEffect(() => {
+    if (resultModalOpen && activeResultQuiz) {
+      refetchQuizAttempt();
+    }
+  }, [resultModalOpen, activeResultQuiz, refetchQuizAttempt]);
 
   if (isLoading) return <h1>Loading course...</h1>;
   if (isError) return <h1>Failed to get course details</h1>;
@@ -111,22 +157,34 @@ const CourseProgress = () => {
     setUserAnswers((prev) => ({ ...prev, [questionId]: option }));
   };
 
-  const handleSubmitQuiz = () => {
+  const handleSubmitQuiz = async () => {
     if (!activeQuiz) return;
 
-    let correct = 0;
+    // Prepare answers in the order of questions
+    const studentAnswers = activeQuiz.questions.map(
+      (q) => userAnswers[q._id] || ""
+    );
 
-    activeQuiz.questions.forEach((q, index) => {
-      const userAnswer = userAnswers[q._id];
-      const correctAnswer = activeQuiz.correctAnswers[index];
+    try {
+      const res = await submitQuizAttempt({
+        courseId,
+        quizId: activeQuiz._id,
+        studentAnswers,
+      }).unwrap();
 
-      if (userAnswer === correctAnswer) correct++;
-    });
-
-    setScore(`${correct} / ${activeQuiz.questions.length}`);
+      setScore(`${res.score} / ${res.totalQuestions}`);
+      toast.success("Quiz submitted!");
+    } catch (err) {
+      toast.error("Failed to submit quiz.");
+    }
   };
 
   const currentQuestion = activeQuiz?.questions?.[currentQuestionIndex];
+
+  const handleShowResult = (quiz) => {
+    setActiveResultQuiz(quiz);
+    setResultModalOpen(true);
+  };
 
   const handleJoinMeeting = async () => {
     try {
@@ -145,33 +203,29 @@ const CourseProgress = () => {
   return (
     <div className="max-w-7xl mx-auto p-4">
       {/* Title & Complete */}
-       <div className="flex justify-between mb-4">
-       <h1 className="text-2xl font-bold">{courseDetails.courseTitle}</h1>
-       <div className="flex items-center gap-4">
-       <Button
-          onClick={completed ? handleInCompleteCourse : handleCompleteCourse}
-          variant={completed ? "outline" : "default"}
-        >
-          {completed ? (
-            <div className="flex items-center">
-              <CheckCircle className="h-4 w-4 mr-2" />
-              <span>Completed</span>
-            </div>
-          ) : (
-            "Mark as completed"
-          )}
-        </Button>
+      <div className="flex justify-between mb-4">
+        <h1 className="text-2xl font-bold">{courseDetails.courseTitle}</h1>
+        <div className="flex items-center gap-4">
+          <Button
+            onClick={completed ? handleInCompleteCourse : handleCompleteCourse}
+            variant={completed ? "outline" : "default"}
+          >
+            {completed ? (
+              <div className="flex items-center">
+                <CheckCircle className="h-4 w-4 mr-2" />
+                <span>Completed</span>
+              </div>
+            ) : (
+              "Mark as completed"
+            )}
+          </Button>
 
-        {/* New Button to Check Meeting Status */}
-        <Button
-          onClick={handleJoinMeeting}
-          variant="default"
-  
-        >
-          Join Live Class
-        </Button>
+          {/* New Button to Check Meeting Status */}
+          <Button onClick={handleJoinMeeting} variant="default">
+            Join Live Class
+          </Button>
+        </div>
       </div>
-    </div>
 
       <div className="flex flex-col md:flex-row gap-4">
         {/* Video */}
@@ -260,17 +314,25 @@ const CourseProgress = () => {
             <p>No quizzes available.</p>
           ) : (
             quizzes.map((quiz) => (
-              <Card key={quiz._id} className="mb-3">
+              <Card key={quiz._id} className="mb-3 relative">
                 <CardContent className="flex items-center justify-between p-4">
                   <CardTitle className="text-md font-medium">
                     {quiz.quizTitle}
                   </CardTitle>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleOpenQuiz(quiz)}
-                  >
-                    Attempt Quiz
-                  </Button>
+                  <div className="flex gap-2 absolute bottom-4 right-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleShowResult(quiz)}
+                    >
+                      Result
+                    </Button>
+                    <Button
+                      variant="default"
+                      onClick={() => handleOpenQuiz(quiz)}
+                    >
+                      Attempt Quiz
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))
@@ -280,12 +342,12 @@ const CourseProgress = () => {
 
       {/* QUIZ MODAL */}
       <Dialog open={quizModalOpen} onOpenChange={setQuizModalOpen}>
-         <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold mb-2">
               {activeQuiz?.quizTitle}
-           </DialogTitle>
-           {activeQuiz && (
+            </DialogTitle>
+            {activeQuiz && (
               <p className="text-sm text-muted-foreground mb-4">
                 Question {currentQuestionIndex + 1} of{" "}
                 {activeQuiz.questions.length}
@@ -331,6 +393,12 @@ const CourseProgress = () => {
           )}
 
           {score && (
+  <div className="text-lg font-semibold text-center mt-6 text-blue-600">
+    Your result is saved. Click result button to view your result.
+  </div>
+)}
+
+          {/* {score && (
             <div
               className={`text-lg font-semibold text-center mt-6 ${
                 parseInt(score.split(" / ")[0]) /
@@ -342,7 +410,7 @@ const CourseProgress = () => {
             >
               Your Score: {score}
             </div>
-          )}
+          )} */}
 
           <DialogFooter className="flex justify-between mt-6">
             <div className="flex gap-2">
@@ -368,12 +436,53 @@ const CourseProgress = () => {
         </DialogContent>
       </Dialog>
 
+      {/* QUIZ RESULT MODAL */}
+      <Dialog open={resultModalOpen} onOpenChange={setResultModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold mb-2">
+              Result of - {activeResultQuiz?.quizTitle} 
+            </DialogTitle>
+          </DialogHeader>
+          <div>
+            {quizAttemptLoading ? (
+              <p>Loading result...</p>
+            ) : quizAttemptError ? (
+              <p className="text-red-500">Failed to load result.</p>
+            ) : quizAttemptData && quizAttemptData.quizAttempt ? (
+              (() => {
+                const { msg, color } = getFeedback(
+                  quizAttemptData.quizAttempt.score,
+                  quizAttemptData.quiz.questions.length
+                );
+                return (
+                  <div>
+                    <p className={`font-semibold ${color}`}>
+                      Score: {quizAttemptData.quizAttempt.score} /{" "}
+                      {quizAttemptData.quiz.questions.length}
+                    </p>
+                    <p className={`mt-2 text-base ${color}`}>{msg}</p>
+                  </div>
+                );
+              })()
+            ) : (
+              <p>No attempt found for this quiz.</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResultModalOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Button
-  onClick={toggleChat}
-  className="fixed bottom-5 right-5 text-white px-4 py-2 rounded shadow"
->
-  {isChatOpen ? "Close Chat" : "Chat"}
-</Button>
+        onClick={toggleChat}
+        className="fixed bottom-5 right-5 text-white px-4 py-2 rounded shadow"
+      >
+        {isChatOpen ? "Close Chat" : "Chat"}
+      </Button>
 
       {isChatOpen && <Chat onClose={toggleChat} />}
     </div>
@@ -381,4 +490,3 @@ const CourseProgress = () => {
 };
 
 export default CourseProgress;
-
